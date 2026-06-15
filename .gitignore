@@ -1,0 +1,23 @@
+# Build output
+bin/
+obj/
+publish/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+
+# Local SQLite database (created at runtime)
+*.db
+*.db-shm
+*.db-wal
+
+# Office lock/temp files
+~$*
+.~lock.*#
+
+# OS
+Thumbs.db
+.DS_Store

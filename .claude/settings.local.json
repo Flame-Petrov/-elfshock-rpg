@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(unzip -p \"Task \\(2\\).docx\" word/document.xml)",
+      "Bash(dotnet add *)",
+      "Bash(dotnet build *)",
+      "PowerShell(dotnet build \"D:\\\\C# Pograms\\\\repos\\\\RPG_Game_Elfshock\\\\RPG_Game_Elfshock.csproj\" -nologo -clp:ErrorsOnly -o \"$env:TEMP\\\\elfshock_verify\")"
+    ]
+  }
+}

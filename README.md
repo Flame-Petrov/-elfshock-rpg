@@ -1,3 +1,9 @@
+<img width="538" height="595" alt="Screenshot 2026-06-15 100744" src="https://github.com/user-attachments/assets/dad841d3-77d6-4d92-9d95-d52a85dca5fe" />
+<img width="534" height="589" alt="Screenshot 2026-06-15 100829" src="https://github.com/user-attachments/assets/83edfd86-10fb-4220-9b2d-150121754acd" />
+<img width="536" height="591" alt="Screenshot 2026-06-15 100849" src="https://github.com/user-attachments/assets/9f99ccb2-b9f6-4dab-abf4-607c26a56d2f" />
+<img width="537" height="593" alt="Screenshot 2026-06-15 100912" src="https://github.com/user-attachments/assets/e335a539-a6fd-4808-8a63-f4846bc060d3" />
+<img width="538" height="595" alt="Screenshot 2026-06-15 100959" src="https://github.com/user-attachments/assets/6073f427-eb54-4eea-aa76-db1e7a28def7" />
+<img width="537" height="595" alt="Screenshot 2026-06-15 101030" src="https://github.com/user-attachments/assets/c3bd0f64-0289-477b-b582-808588d6d518" />
 # Elfshock
 
 A turn-based, console-style **RPG** built with **WPF** and the **MVVM** pattern on **.NET 10**.

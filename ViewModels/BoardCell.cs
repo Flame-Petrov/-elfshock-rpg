@@ -15,7 +15,8 @@ namespace RPG_Game_Elfshock.ViewModels
             bool isBlast,
             bool isArrowHit,
             bool isArrowNext,
-            bool isDoomed)
+            bool isDoomed,
+            bool isPickup)
         {
             Symbol = symbol;
             IsHero = isHero;
@@ -25,11 +26,13 @@ namespace RPG_Game_Elfshock.ViewModels
             IsArrowHit = isArrowHit;
             IsArrowNext = isArrowNext;
             IsDoomed = isDoomed;
+            IsPickup = isPickup;
         }
 
         public string Symbol { get; }
         public bool IsHero { get; }
         public bool IsMonster { get; }
+        public bool IsPickup { get; }
         public bool IsSelectedTarget { get; }
         public bool IsBlast { get; }
 

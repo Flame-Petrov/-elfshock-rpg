@@ -1,5 +1,8 @@
 namespace RPG_Game_Elfshock.Models.Characters
 {
+    /// <summary>The primary attributes a stat pickup can boost.</summary>
+    public enum StatKind { Strength, Agility, Intelligence }
+
     /// <summary>
     /// Shared base for every fighter on the board (the three races and the monster).
     /// Holds the primary attributes, the derived combat stats and the board position.
@@ -54,6 +57,30 @@ namespace RPG_Game_Elfshock.Models.Characters
             Health = Strength * 5;
             Mana = Intelligence * 3;
             Damage = AttackStat * 2;
+        }
+
+        /// <summary>
+        /// Adds +1 to a primary stat from a pickup, updating derived stats
+        /// incrementally so current Health/Mana are not reset to full.
+        /// </summary>
+        public void GainStatPoint(StatKind stat)
+        {
+            switch (stat)
+            {
+                case StatKind.Strength:
+                    Strength++;
+                    Health += 5; // +max HP and a little current health
+                    break;
+                case StatKind.Agility:
+                    Agility++;
+                    break;
+                case StatKind.Intelligence:
+                    Intelligence++;
+                    Mana += 3; // more mana → more range via EffectiveRange
+                    break;
+            }
+
+            Damage = AttackStat * 2; // recompute damage for the class's attack stat
         }
     }
 }

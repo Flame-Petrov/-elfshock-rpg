@@ -17,6 +17,7 @@ namespace RPG_Game_Elfshock.Models
 
         public Character Hero { get; }
         public List<Monster> Monsters { get; } = new List<Monster>();
+        public List<Pickup> Pickups { get; } = new List<Pickup>();
 
         public Board(Character hero)
         {
@@ -32,6 +33,10 @@ namespace RPG_Game_Elfshock.Models
         public bool IsOccupied(int row, int col) =>
             (Hero.Row == row && Hero.Col == col) ||
             Monsters.Any(m => m.Row == row && m.Col == col);
+
+        /// <summary>The pickup on a cell, or null. Pickups never block movement.</summary>
+        public Pickup? PickupAt(int row, int col) =>
+            Pickups.FirstOrDefault(p => p.Row == row && p.Col == col);
 
         /// <summary>
         /// Chebyshev distance: a diagonal step counts as 1, matching the 8-direction movement.

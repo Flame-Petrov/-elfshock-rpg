@@ -27,11 +27,19 @@ namespace RPG_Game_Elfshock.Models
         private const int LateralTolerance = 2; // how far the arrow may drift sideways
         private const int WarriorHealPerKill = 5;
 
+        // A stat pickup spawns every this many turns, up to a cap on the board.
+        private const int PickupInterval = 5;
+        private const int MaxPickupsOnBoard = 3;
+
         private readonly Random _rng = new Random();
 
         public Board Board { get; }
         public int MonstersKilled { get; private set; }
+        public int TurnCount { get; private set; }
         public bool IsGameOver => !Board.Hero.IsAlive;
+
+        /// <summary>Stat points the hero has collected but not yet assigned.</summary>
+        public int PendingStatPoints { get; private set; }
 
         public GameEngine(Character hero)
         {
@@ -50,9 +58,24 @@ namespace RPG_Game_Elfshock.Models
             Board.Hero.Row = row;
             Board.Hero.Col = col;
 
+            // Stepping onto a pickup collects it (grants a stat point to spend).
+            Pickup? pickup = Board.PickupAt(row, col);
+            if (pickup is not null)
+            {
+                Board.Pickups.Remove(pickup);
+                PendingStatPoints++;
+            }
+
             // A move is a non-attack turn, so the hero recovers some mana.
             RegenerateMana();
             return true;
+        }
+
+        /// <summary>Consumes one pending stat point (after the player assigns it).</summary>
+        public void ConsumeStatPoint()
+        {
+            if (PendingStatPoints > 0)
+                PendingStatPoints--;
         }
 
         /// <summary>Restores a little of the hero's mana, capped at MaxMana.</summary>
@@ -174,8 +197,30 @@ namespace RPG_Game_Elfshock.Models
             // The existing monsters act first; the new monster only appears once
             // the dust settles, so it cannot move or attack on the turn it spawns.
             MonstersAct();
-            if (!IsGameOver)
-                SpawnMonster();
+            if (IsGameOver)
+                return;
+
+            SpawnMonster();
+
+            TurnCount++;
+            if (TurnCount % PickupInterval == 0)
+                SpawnPickup();
+        }
+
+        /// <summary>Drops a stat pickup on a random free cell (not on another pickup).</summary>
+        private void SpawnPickup()
+        {
+            if (Board.Pickups.Count >= MaxPickupsOnBoard)
+                return;
+
+            var cells = Board.EmptyCells()
+                .Where(c => Board.PickupAt(c.Row, c.Col) is null)
+                .ToList();
+            if (cells.Count == 0)
+                return;
+
+            var (row, col) = cells[_rng.Next(cells.Count)];
+            Board.Pickups.Add(new Pickup { Row = row, Col = col });
         }
 
         private void SpawnMonster()

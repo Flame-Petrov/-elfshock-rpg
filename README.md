@@ -37,7 +37,9 @@ The game runs through four screens: **Main Menu → Character Select → In-Game
 3. Each turn you either **move** one cell (8 directions) or **attack** a monster in range.
 4. After your action a **new monster spawns**, then every monster either attacks you
    (if adjacent) or paths toward you (shortest path, avoiding obstacles).
-5. The game ends when your hero's health hits 0. Your kill count is your score.
+5. Every **5 turns** a **stat pickup** (`✚`) appears on a random cell. Step on it to
+   collect it, then add **+1 to a stat of your choice**.
+6. The game ends when your hero's health hits 0. Your kill count is your score.
 
 ---
 
@@ -62,6 +64,8 @@ Extra rules that make every stat matter:
 - **Mana extends range** — every 9 mana grants +1 attack range (`EffectiveRange`).
 - **Moving regenerates mana** — each non-attack turn restores a little mana (even at 0 INT),
   so kiting slowly builds up your range.
+- **Stat pickups** — every 5 turns a `✚` drops on the board; collecting it lets you spend a
+  point on Strength, Agility, or Intelligence, so your hero grows stronger over a run.
 
 ---
 
@@ -90,6 +94,7 @@ RPG_Game_Elfshock/
 │   ├── GameEngine.cs          #   turn loop, spawning, attacks, monster AI (BFS pathfinding)
 │   ├── Movement.cs            #   key → grid offset map (8 directions)
 │   ├── GameScreen.cs          #   the four-screen enum
+│   ├── Pickup.cs              #   collectible stat point on the board
 │   └── Characters/            #   Character base + Warrior / Archer / Mage / Monster
 │
 ├── ViewModels/                # MVVM logic + state machines (one per screen)
@@ -339,6 +344,9 @@ Above the board you see your **Health / Mana / Kills** and **STR / AGI / INT / R
 Watch your class ability fire: the **Mage** detonates a purple blast, the **Archer**'s arrow
 ricochets through aligned foes (doomed ones flash red), and the **Warrior** heals on each kill.
 If you take damage the whole screen pulses red. When you can't move, only **Attack** is offered.
+
+**Stat pickups** — when you step on a `✚`, a prompt appears: use **W / S** or the **arrow keys**
+to pick Strength, Agility, or Intelligence, then **Enter** to add the point.
 
 ### Game Over
 Press **any key** to play again.

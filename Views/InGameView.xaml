@@ -82,6 +82,21 @@
                             <Setter TargetName="Sym" Property="Foreground" Value="#FF66FF66" />
                             <Setter TargetName="Sym" Property="FontWeight" Value="Bold" />
                         </DataTrigger>
+                        <!-- A stat pickup: glowing green, gently pulsing -->
+                        <DataTrigger Binding="{Binding IsPickup}" Value="True">
+                            <Setter TargetName="Sym" Property="Foreground" Value="#FF66FF99" />
+                            <Setter TargetName="Sym" Property="FontWeight" Value="Bold" />
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                        <DoubleAnimation Storyboard.TargetName="Sym"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="0.5" To="1.0"
+                                                         Duration="0:0:0.6" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                        </DataTrigger>
                         <!-- The monster currently targeted for attack -->
                         <DataTrigger Binding="{Binding IsSelectedTarget}" Value="True">
                             <Setter TargetName="Cell" Property="Background" Value="#55EEDD55" />

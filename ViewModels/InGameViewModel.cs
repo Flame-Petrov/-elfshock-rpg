@@ -15,13 +15,14 @@ namespace RPG_Game_Elfshock.ViewModels
     /// </summary>
     public sealed class InGameViewModel : ViewModelBase, IKeyInput
     {
-        private enum Mode { ChooseAction, Move, Attack }
+        private enum Mode { ChooseAction, Move, Attack, AllocatePoint }
 
         private readonly MainViewModel _main;
         private readonly GameEngine _engine;
         private Mode _mode = Mode.ChooseAction;
         private IReadOnlyList<Monster> _targets = new List<Monster>();
         private int _selectedTargetIndex;
+        private int _statChoiceIndex; // 0 = STR, 1 = AGI, 2 = INT (pickup allocation)
         private bool _gameSaved;
 
         // While an attack effect plays, input is ignored.
@@ -94,6 +95,43 @@ namespace RPG_Game_Elfshock.ViewModels
                 case Mode.Attack:
                     HandleAttack(key);
                     break;
+                case Mode.AllocatePoint:
+                    HandleAllocate(key);
+                    break;
+            }
+        }
+
+        /// <summary>Pickup reward: choose a stat with Up/Down or W/S, Enter to confirm.</summary>
+        private void HandleAllocate(Key key)
+        {
+            char? letter = KeyHelper.ToLetter(key);
+
+            if (key == Key.Up || letter == 'W')
+            {
+                _statChoiceIndex = (_statChoiceIndex + 2) % 3;
+                Refresh();
+            }
+            else if (key == Key.Down || letter == 'S')
+            {
+                _statChoiceIndex = (_statChoiceIndex + 1) % 3;
+                Refresh();
+            }
+            else if (key == Key.Enter)
+            {
+                StatKind stat = _statChoiceIndex switch
+                {
+                    1 => StatKind.Agility,
+                    2 => StatKind.Intelligence,
+                    _ => StatKind.Strength
+                };
+
+                _engine.Board.Hero.GainStatPoint(stat);
+                _engine.ConsumeStatPoint();
+
+                // Assign the next point too, or return to the normal turn.
+                _mode = _engine.PendingStatPoints > 0 ? Mode.AllocatePoint : Mode.ChooseAction;
+                _statChoiceIndex = 0;
+                Refresh();
             }
         }
 
@@ -318,7 +356,17 @@ namespace RPG_Game_Elfshock.ViewModels
                 return;
             }
 
-            _mode = Mode.ChooseAction;
+            // A collected pickup lets the player spend a stat point before continuing.
+            if (_engine.PendingStatPoints > 0)
+            {
+                _mode = Mode.AllocatePoint;
+                _statChoiceIndex = 0;
+            }
+            else
+            {
+                _mode = Mode.ChooseAction;
+            }
+
             Refresh();
         }
 
@@ -367,7 +415,8 @@ namespace RPG_Game_Elfshock.ViewModels
                     if (board.Hero.Row == r && board.Hero.Col == c)
                     {
                         cells.Add(new BoardCell(board.Hero.Symbol.ToString(), isHero: true, isMonster: false,
-                            isSelectedTarget: false, isBlast: isBlast, isArrowHit: false, isArrowNext: false, isDoomed: false));
+                            isSelectedTarget: false, isBlast: isBlast, isArrowHit: false, isArrowNext: false,
+                            isDoomed: false, isPickup: false));
                         continue;
                     }
 
@@ -381,12 +430,22 @@ namespace RPG_Game_Elfshock.ViewModels
 
                         cells.Add(new BoardCell(monster.Symbol.ToString(), isHero: false, isMonster: true,
                             isSelectedTarget: ReferenceEquals(monster, selected), isBlast: isBlast,
-                            isArrowHit: isArrowHit, isArrowNext: isArrowNext, isDoomed: isDoomed));
+                            isArrowHit: isArrowHit, isArrowNext: isArrowNext, isDoomed: isDoomed, isPickup: false));
+                        continue;
+                    }
+
+                    Pickup? pickup = board.PickupAt(r, c);
+                    if (pickup is not null)
+                    {
+                        cells.Add(new BoardCell(pickup.Symbol.ToString(), isHero: false, isMonster: false,
+                            isSelectedTarget: false, isBlast: isBlast, isArrowHit: false, isArrowNext: false,
+                            isDoomed: false, isPickup: true));
                     }
                     else
                     {
                         cells.Add(new BoardCell(Board.EmptyCell.ToString(), isHero: false, isMonster: false,
-                            isSelectedTarget: false, isBlast: isBlast, isArrowHit: false, isArrowNext: false, isDoomed: false));
+                            isSelectedTarget: false, isBlast: isBlast, isArrowHit: false, isArrowNext: false,
+                            isDoomed: false, isPickup: false));
                     }
                 }
             }
@@ -420,8 +479,25 @@ namespace RPG_Game_Elfshock.ViewModels
                 "Move:  W=Up  S=Down  A=Left  D=Right\n" +
                 "       Q=Up-Left  E=Up-Right  Z=Down-Left  X=Down-Right",
             Mode.Attack => BuildTargetInfo(),
+            Mode.AllocatePoint => BuildStatChoice(),
             _ => string.Empty
         };
+
+        /// <summary>The "+1 stat" pickup reward menu.</summary>
+        private string BuildStatChoice()
+        {
+            Character h = _engine.Board.Hero;
+
+            string Row(int index, string name, int value) =>
+                (index == _statChoiceIndex ? "▶" : "  ") + $" {name}: {value}";
+
+            return
+                "Pickup collected!  Add +1 to a stat:\n" +
+                Row(0, "Strength", h.Strength) + "\n" +
+                Row(1, "Agility", h.Agility) + "\n" +
+                Row(2, "Intelligence", h.Intelligence) + "\n" +
+                "[W/S or arrows] choose    [Enter] confirm";
+        }
 
         /// <summary>Details of the highlighted monster and its HP after your hit.</summary>
         private string BuildTargetInfo()
